@@ -1,0 +1,44 @@
+{
+    "name": "hauerheinrich/zabbix_monitor",
+    "description": "TYPO3 Zabbix Monitor",
+    "type": "typo3-cms-extension",
+    "homepage": "",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Christian Hackl",
+            "role": "Developer",
+            "homepage": "https://groundstack.de"
+        }
+    ],
+    "require": {
+        "typo3/cms-core": "^10.0"
+    },
+    "require-dev": {
+    },
+    "suggest": {
+    },
+    "autoload": {
+        "psr-4": {
+            "HauerHeinrich\\ZabbixMonitor\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "HauerHeinrich\\ZabbixMonitor\\Tests\\": "Tests/"
+        }
+    },
+    "config": {
+        "vendor-dir": ".Build/vendor",
+        "bin-dir": ".Build/bin"
+    },
+    "scripts": {
+    },
+    "extra": {
+        "typo3/cms": {
+            "cms-package-dir": "{$vendor-dir}/typo3/cms",
+            "web-dir": ".Build/Web",
+            "extension-key": "zabbix_monitor"
+        }
+    }
+}

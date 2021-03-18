@@ -1,0 +1,73 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    data-namespace-typo3-fluid="true">
+
+<div class="zabbix_monitor show-view">
+    <f:debug title="show view">{_all}</f:debug>
+    <f:if condition="{apiData}">
+        <h1><f:link.typolink parameter="{apiData.apiUrl}">{apiData.name}</f:link.typolink></h1>
+
+        <div class="environment">
+            <div class="typo3-version">
+                <span>
+                    TYPO3 Version
+                </span>
+                <span>
+                    {apiData.GetTYPO3Version.value}
+                </span>
+            </div>
+            <div class="php-version">
+                <span>
+                    PHP Version
+                </span>
+                <span>
+                    {apiData.GetPHPVersion.value}
+                </span>
+            </div>
+            <div class="disc-space">
+                <span>Disc Space</span>
+                <div>
+                    <span>Total</span>
+                    <span>{apiData.GetDiskSpace.value.total}</span>
+                </div>
+                <div>
+                    <span>Free</span>
+                    <span>{apiData.GetDiskSpace.value.free}</span>
+                </div>
+            </div>
+        </div>
+
+        <f:if condition="{apiData.GetExtensionList}">
+            <div class="extension-list">
+                <h3>ExtensionList - System</h3>
+                <f:for each="{apiData.GetExtensionList.value}" as="ext" iteration="i">
+                    <f:if condition="{ext.scope.system}">
+                        <div class="extension">
+                            <div>{ext.ext_key}</div>
+                            <div>{ext.version}</div>
+                        </div>
+                    </f:if>
+                </f:for>
+            </div>
+            <div class="extension-list">
+                <h3>ExtensionList - local</h3>
+                <f:for each="{apiData.GetExtensionList.value}" as="ext" iteration="i">
+                    <f:if condition="{ext.scope.local}">
+                        <div class="extension">
+                            <div>{ext.ext_key}</div>
+                            <div>{ext.version}</div>
+                        </div>
+                    </f:if>
+                </f:for>
+            </div>
+        </f:if>
+    </f:if>
+</div>
+
+<style>
+    .zabbix_monitor.show-view .extension-list .extension {
+        display: grid;
+        grid-template-columns: minmax(200px, 20%) 200px;
+    }
+</style>
+
+</html>

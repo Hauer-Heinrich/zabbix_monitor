@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" datatype="plaintext" original="EXT:zabbix_monitor/Resources/Private/Language/locallang" date="2021-02-11T16:03:22Z" product-name="zabbix_monitor">
+        <header/>
+        <body>
+            <trans-unit id="tx_zabbixmonitor_domain_model_clientinfo" resname="tx_zabbixmonitor_domain_model_clientinfo">
+                <source>Blubb</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

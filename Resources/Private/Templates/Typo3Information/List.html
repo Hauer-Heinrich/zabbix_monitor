@@ -1,0 +1,177 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    data-namespace-typo3-fluid="true">
+
+<div class="zabbix_monitor list-view">
+    <f:if condition="{apiData}">
+        <div class="controls">
+            <input type="text" name="filtr-search" value="" placeholder="Your search" class="filter-search" data-search="" onkeyup="searchClientName()">
+        </div>
+
+        <div class="table filtr-container">
+            <div class="header">
+                <div><h3 data-sortOrder="url">Domain</h3></div>
+                <div><h3 data-sortOrder="typo3-version">TYPO3 Version</h3></div>
+                <div><h3 data-sortOrder="php-version">PHP Version</h3></div>
+                <div><h3>Has Update</h3></div>
+                <div><h3>Has Security Update</h3></div>
+            </div>
+
+            <div class="table-content">
+                <f:for each="{apiData}" as="item" key="apiDataKey" iteration="i">
+                    <div class="domain-{i.cycle} filter-item"
+                        data-category="{f:if(condition: '{item.HasUpdate.value}', then: 'needUpdate')}"
+                        data-url="{item.apiUrl}"
+                        data-typo3-version="{item.GetTYPO3Version.value}"
+                        data-php-version="{item.GetPHPVersion.value}">
+                        <div>
+                            <f:link.typolink parameter="{item.apiUrl}" title="Open {item.apiUrl}" class="external-link domain-link">{apiDataKey}</f:link.typolink>
+                            <f:link.action action="show" arguments="{apiUrl : '{item.apiUrl}'}" pageUid="{settings.singleViewPageUid}" class="detail-link" title="Show details of {apiDataKey}">open</f:link.action>
+                        </div>
+                        <div>{item.GetTYPO3Version.value}</div>
+                        <div>{item.GetPHPVersion.value}</div>
+                        <div class="center {f:if(condition: '{item.HasUpdate.value}', then: 'warning', else: 'success')}">{item.HasUpdate.value}</div>
+                        <div class="center {f:if(condition: '{item.HasSecurityUpdate.value}', then: 'error', else: 'success')}">{item.HasSecurityUpdate.value}</div>
+                    </div>
+                </f:for>
+            </div>
+        </div>
+
+    </f:if>
+</div>
+
+<style>
+    .zabbix_monitor .table > .header,
+    .zabbix_monitor .table .table-content > div {
+        display: grid;
+        grid-template-columns: 25% 200px 200px 100px 100px;
+    }
+
+    .zabbix_monitor .table > .header > div {
+        align-self: center;
+    }
+
+    .zabbix_monitor .table .table-content > div:nth-child(even) {
+        background-color: rgb(204, 204, 204, 0.36);
+    }
+
+    .zabbix_monitor div.center {
+        text-align: center;
+    }
+
+    .zabbix_monitor div.success {
+        background-color: green;
+    }
+
+    .zabbix_monitor div.warning {
+        background-color: orange;
+    }
+
+    .zabbix_monitor div.error {
+        background-color: red;
+    }
+
+    .zabbix_monitor .controls {
+        display: none;
+    }
+
+    .js .zabbix_monitor .controls {
+        display: block;
+    }
+
+    .js .zabbix_monitor .table > .header h3[data-sortorder] {
+        cursor: pointer;
+    }
+</style>
+
+<f:asset.script identifier="zabbixMonitor/sort">
+    function sortListDir(attribute) {
+        var list, i, switching, b, shouldSwitch, dir, switchcount = 0;
+            list = document.getElementById("c{data.uid}");
+        switching = true;
+        // Set the sorting direction to ascending:
+        dir = "asc";
+        // Make a loop that will continue until no switching has been done:
+        while (switching) {
+            // Start by saying: no switching is done:
+            switching = false;
+            b = list.querySelectorAll(".filter-item");
+            // Loop through all list-items:
+            for (i = 0; i < (b.length - 1); i++) {
+                // Start by saying there should be no switching:
+                shouldSwitch = false;
+                /* Check if the next item should switch place with the current item,
+                based on the sorting direction (asc or desc): */
+                if (dir == "asc") {
+                    if (b[i].getAttribute(attribute).toLowerCase() > b[i + 1].getAttribute(attribute).toLowerCase()) {
+                        /* If next item is alphabetically lower than current item,
+                        mark as a switch and break the loop: */
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir == "desc") {
+                    if (b[i].getAttribute(attribute).toLowerCase() < b[i + 1].getAttribute(attribute).toLowerCase()) {
+                        /* If next item is alphabetically higher than current item,
+                        mark as a switch and break the loop: */
+                        shouldSwitch= true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                /* If a switch has been marked, make the switch
+                and mark that a switch has been done: */
+                b[i].parentNode.insertBefore(b[i + 1], b[i]);
+                switching = true;
+                // Each time a switch is done, increase switchcount by 1:
+                switchcount ++;
+            } else {
+                /* If no switching has been done AND the direction is "asc",
+                set the direction to "desc" and run the while loop again. */
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+    };
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.NodeList && !NodeList.prototype.forEach) {
+            NodeList.prototype.forEach = Array.prototype.forEach;
+        }
+
+        document.querySelector("[data-sortOrder='url']").addEventListener("click", function() {
+            sortListDir("data-url");
+        });
+        document.querySelector("[data-sortOrder='typo3-version']").addEventListener("click", function() {
+            sortListDir("data-typo3-version");
+        });
+        document.querySelector("[data-sortOrder='php-version']").addEventListener("click", function() {
+            sortListDir("data-php-version");
+        });
+    });
+</f:asset.script>
+
+<f:asset.script identifier="zabbixMonitor/search">
+    function searchClientName() {
+        // Declare variables
+        var container, input, filter, ul, li, a, i, txtValue;<f:comment></f:comment>
+        container = document.getElementById("c{data.uid}");
+        input = container.querySelector('.filter-search');
+        filter = input.value.toUpperCase();
+        ul = container.querySelector(".table-content");
+        li = ul.querySelectorAll('.filter-item');
+
+        // Loop through all list items, and hide those who don't match the search query
+        for (i = 0; i < li.length; i++) {
+            a = li[i].querySelector(".domain-link");
+            txtValue = a.textContent || a.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                li[i].style.display = "";
+            } else {
+                li[i].style.display = "none";
+            }
+        }
+    }
+</f:asset.script>
+
+</html>

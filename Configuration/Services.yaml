@@ -1,0 +1,18 @@
+# Configuration/Services.yaml
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  HauerHeinrich\ZabbixMonitor\:
+    resource: '../Classes/*'
+
+  cache.api_data:
+    class: TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
+    factory: ['@TYPO3\CMS\Core\Cache\CacheManager', 'getCache']
+    arguments: ['zabbixmonitor_apidata']
+
+  HauerHeinrich\ZabbixMonitor\Controller\Typo3InformationController:
+    arguments:
+      $cache: '@cache.api_data'

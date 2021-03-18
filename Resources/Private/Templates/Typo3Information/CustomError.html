@@ -1,0 +1,20 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    data-namespace-typo3-fluid="true">
+
+<div class="zabbix_monitor list-view">
+    <f:if condition="{params}">
+        <f:if condition="{params.errors}">
+            <f:for each="{params.errors}" as="error" iteration="i">
+                <div class="error">ERROR: {error}</div>
+            </f:for>
+        </f:if>
+
+        <f:if condition="{params.warnings}">
+            <f:for each="{params.warnings}" as="warning" iteration="i">
+                <div class="warning">WARNING: {warning}</div>
+            </f:for>
+        </f:if>
+    </f:if>
+</div>
+
+</html>

@@ -1,0 +1,35 @@
+plugin.tx_zabbixmonitor_listview {
+    view {
+        # cat=plugin.tx_zabbixmonitor_listview/file; type=string; label=Path to template root (FE)
+        templateRootPath = EXT:zabbix_monitor/Resources/Private/Templates/
+        # cat=plugin.tx_zabbixmonitor_listview/file; type=string; label=Path to template partials (FE)
+        partialRootPath = EXT:zabbix_monitor/Resources/Private/Partials/
+        # cat=plugin.tx_zabbixmonitor_listview/file; type=string; label=Path to template layouts (FE)
+        layoutRootPath = EXT:zabbix_monitor/Resources/Private/Layouts/
+    }
+    persistence {
+        # cat=plugin.tx_zabbixmonitor_listview//a; type=string; label=Default storage PID
+        storagePid =
+
+        # cat=plugin.tx_zabbixmonitor_listview//a; type=string; label=Default storage PID of organizations (tt_address)
+        storagePidOrganizations = 0
+
+        # cat=plugin.tx_zabbixmonitor_listview//a; type=string; label=Default storage PID of contact points (tt_address)
+        storagePidContactPointAddresses = 0
+    }
+}
+
+plugin.tx_zabbixmonitor_detailview {
+    view {
+        # cat=plugin.tx_zabbixmonitor_detailview/file; type=string; label=Path to template root (FE)
+        templateRootPath = EXT:zabbix_monitor/Resources/Private/Templates/
+        # cat=plugin.tx_zabbixmonitor_detailview/file; type=string; label=Path to template partials (FE)
+        partialRootPath = EXT:zabbix_monitor/Resources/Private/Partials/
+        # cat=plugin.tx_zabbixmonitor_detailview/file; type=string; label=Path to template layouts (FE)
+        layoutRootPath = EXT:zabbix_monitor/Resources/Private/Layouts/
+    }
+    persistence {
+        # cat=plugin.tx_zabbixmonitor_detailview//a; type=string; label=Default storage PID
+        storagePid =
+    }
+}

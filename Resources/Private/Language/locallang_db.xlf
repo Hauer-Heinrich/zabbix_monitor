@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" datatype="plaintext" original="EXT:zabbix_monitor/Resources/Private/Language/locallang_db" date="2021-02-11T16:03:22Z" product-name="zabbix_monitor">
+        <header/>
+        <body>
+            <trans-unit id="title">
+                <source>Zabbix Client info</source>
+            </trans-unit>
+
+            <trans-unit id="tca.field.title">
+                <source>Title</source>
+            </trans-unit>
+            <trans-unit id="tca.field.api_url">
+                <source>API URL</source>
+            </trans-unit>
+            <trans-unit id="tca.field.api_url.description">
+                <source>(e. g. https://www.domain.tld/zabbixclient)</source>
+            </trans-unit>
+            <trans-unit id="tca.field.api_key">
+                <source>API Key</source>
+            </trans-unit>
+            <trans-unit id="tca.field.api_key.description">
+                <source>(from the EXT:zabbix_client of the client installation)</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
