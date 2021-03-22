@@ -1,0 +1,28 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    data-namespace-typo3-fluid="true">
+
+<div class="section environment">
+    <table>
+        <caption>System</caption>
+        <tbody>
+            <tr>
+                <td>TYPO3 Version</td>
+                <td class="green {f:if(condition: '{apiData.HasUpdate.value}', then: 'warning')} {f:if(condition: '{apiData.HasSecurityUpdate.value}', then: 'error')}">{apiData.GetTYPO3Version.value}</td>
+            </tr>
+            <tr>
+                <td>PHP Version</td>
+                <td class="green {f:if(condition: '{apiData.HasOutDatedPhpVersion.value}', then: 'error')}">{apiData.GetPHPVersion.value}</td>
+            </tr>
+            <tr>
+                <td>Disc Space</td>
+                <td>Total: {apiData.GetDiskSpace.value.total} || Free: {apiData.GetDiskSpace.value.free}</td>
+            </tr>
+            <tr>
+                <td>Extensions has updates available</td>
+                <td class="green {f:if(condition: '{apiData.HasExtensionUpdateList.value -> f:count()} > 0', then: 'warning')}"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</html>

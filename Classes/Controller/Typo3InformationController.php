@@ -56,6 +56,7 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
         'HasRemainingUpdates',
         'GetZabbixLogFileSize',
         // 'HasExtensionUpdate',
+        'HasExtensionUpdateList' => 'loaded',
         // 'GetProgramVersion',
         // 'GetFeatureValue',
         'GetOpCacheStatus',
@@ -172,6 +173,7 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
      * @return void
      */
     public function showAction(string $apiUrl): void {
+        $apiUrl = htmlspecialchars(strip_tags($apiUrl));
         $errors = [];
         if (!filter_var($apiUrl, FILTER_VALIDATE_URL)) {
             $errors[] = 'Given parameter apiUrl is not a valid URL!';
@@ -180,37 +182,46 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
 
         $domainInfo = $this->clientinfoRepository->findByApiUrl($apiUrl)[0];
 
-        $apiUrl = $domainInfo->getApiUrl();
-        $apiKey = $domainInfo->getApiKey();
-        $name = empty($domainInfo->getTitle()) ? $apiUrl : $domainInfo->getTitle();
+        if(!empty($domainInfo)) {
+            $apiUrl = $domainInfo->getApiUrl();
+            $apiKey = $domainInfo->getApiKey();
+            $name = empty($domainInfo->getTitle()) ? $apiUrl : $domainInfo->getTitle();
 
-        $apiData = [];
-        $apiData['name'] = $name;
-        $apiData['apiUrl'] = $apiUrl;
-        foreach ($this->methodList as $methodKey => $method) {
-            $methodParams = '';
+            $apiData = [];
+            $apiData['name'] = $name;
+            $apiData['apiUrl'] = $apiUrl;
+            foreach ($this->methodList as $methodKey => $method) {
+                $methodParams = '';
 
-            if(is_string($methodKey)) {
-                $methodParams = $method;
-                $method = $methodKey;
+                if(is_string($methodKey)) {
+                    $methodParams = $method;
+                    $method = $methodKey;
+                }
+
+                $apiData[$method] = $this->getCachedValue($apiUrl, $apiKey, $method, $methodParams, [$method]);
             }
 
-            $apiData[$method] = $this->getCachedValue($apiUrl, $apiKey, $method, $methodParams, [$method]);
+            if(!empty($apiData['GetDiskSpace'])) {
+                $totalBytes = $apiData['GetDiskSpace']['value']['total'];
+                $freeBytes = $apiData['GetDiskSpace']['value']['free'];
+                $totalFormated = \HauerHeinrich\ZabbixMonitor\Helper\FormatHelper::formatBytes($totalBytes);
+                $freeFormated = \HauerHeinrich\ZabbixMonitor\Helper\FormatHelper::formatBytes($freeBytes);
+
+                $apiData['GetDiskSpace']['value']['total'] = $totalFormated;
+                $apiData['GetDiskSpace']['value']['free'] = $freeFormated;
+            }
+
+            $phpVersion = $apiData['GetPHPVersion']['value'];
+            $apiData['HasOutDatedPhpVersion']['status'] = false;
+            if(!empty($phpVersion)) {
+                $apiData['HasOutDatedPhpVersion']['status'] = true;
+                $apiData['HasOutDatedPhpVersion']['value'] = $this->checkPhpVersion($phpVersion);
+            }
+
+            $this->view->assignMultiple([
+                'apiData' => $apiData
+            ]);
         }
-
-        if(!empty($apiData['GetDiskSpace'])) {
-            $totalBytes = $apiData['GetDiskSpace']['value']['total'];
-            $freeBytes = $apiData['GetDiskSpace']['value']['free'];
-            $totalFormated = \HauerHeinrich\ZabbixMonitor\Helper\FormatHelper::formatBytes($totalBytes);
-            $freeFormated = \HauerHeinrich\ZabbixMonitor\Helper\FormatHelper::formatBytes($freeBytes);
-
-            $apiData['GetDiskSpace']['value']['total'] = $totalFormated;
-            $apiData['GetDiskSpace']['value']['free'] = $freeFormated;
-        }
-
-        $this->view->assignMultiple([
-            'apiData' => $apiData
-        ]);
     }
 
     /**
@@ -241,5 +252,36 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
         $this->view->assignMultiple([
             'params' => $params
         ]);
+    }
+
+    /**
+     * checkPhpVersion
+     * checks if given PHP version is outdated
+     *
+     * @param string $phpVersion
+     * @return bool
+     */
+    public function checkPhpVersion(string $phpVersion): bool {
+        $phpVersionArray = explode('.', $phpVersion);
+        $phpShortVersion = $phpVersionArray[0].'.'.$phpVersionArray[1];
+
+        $phpVersionsList = [
+            '7.2' => strtotime('2019-11-30'),
+            '7.3' => strtotime('2020-12-06'),
+            '7.4' => strtotime('2022-11-28'),
+            '8.0' => strtotime('2023-11-26'),
+        ];
+
+        foreach ($phpVersionsList as $key => $value) {
+            if($key === $phpShortVersion) {
+                if($value < time()) {
+                    return true;
+                }
+
+                break;
+            }
+        }
+
+        return false;
     }
 }

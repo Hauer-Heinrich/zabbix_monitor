@@ -1,0 +1,49 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    data-namespace-typo3-fluid="true">
+
+<f:if condition="{apiData.GetExtensionList} && {apiData.GetExtensionList.value}">
+    <div class="section extension-list extension-list-system">
+        <table>
+            <caption>ExtensionList - System</caption>
+            <thead>
+                <tr>
+                    <th>Extensionkey</th>
+                    <th>Version</th>
+                </tr>
+            </thead>
+            <tbody>
+                <f:for each="{apiData.GetExtensionList.value}" as="ext" iteration="i">
+                    <f:if condition="{ext.scope.system}">
+                        <tr>
+                            <td>{ext.ext_key}</td>
+                            <td>{ext.version}</td>
+                        </tr>
+                    </f:if>
+                </f:for>
+            </tbody>
+        </table>
+    </div>
+    <div class="section extension-list extension-list-local">
+        <table>
+            <caption>ExtensionList - local</caption>
+            <thead>
+                <tr>
+                    <th>Extensionkey</th>
+                    <th>Version</th>
+                </tr>
+            </thead>
+            <tbody>
+                <f:for each="{apiData.GetExtensionList.value}" as="ext" iteration="i">
+                    <f:if condition="{ext.scope.local}">
+                        <tr>
+                            <td>{ext.ext_key}</td>
+                            <td>{ext.version}</td>
+                        </tr>
+                    </f:if>
+                </f:for>
+            </tbody>
+        </table>
+    </div>
+</f:if>
+
+</html>

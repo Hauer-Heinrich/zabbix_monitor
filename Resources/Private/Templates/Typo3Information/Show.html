@@ -6,67 +6,59 @@
     <f:if condition="{apiData}">
         <h1><f:link.typolink parameter="{apiData.apiUrl}">{apiData.name}</f:link.typolink></h1>
 
-        <div class="environment">
-            <div class="typo3-version">
-                <span>
-                    TYPO3 Version
-                </span>
-                <span>
-                    {apiData.GetTYPO3Version.value}
-                </span>
-            </div>
-            <div class="php-version">
-                <span>
-                    PHP Version
-                </span>
-                <span>
-                    {apiData.GetPHPVersion.value}
-                </span>
-            </div>
-            <div class="disc-space">
-                <span>Disc Space</span>
-                <div>
-                    <span>Total</span>
-                    <span>{apiData.GetDiskSpace.value.total}</span>
-                </div>
-                <div>
-                    <span>Free</span>
-                    <span>{apiData.GetDiskSpace.value.free}</span>
-                </div>
-            </div>
-        </div>
+        <f:render partial="SystemShortOverview" arguments="{_all}" />
 
-        <f:if condition="{apiData.GetExtensionList}">
-            <div class="extension-list">
-                <h3>ExtensionList - System</h3>
-                <f:for each="{apiData.GetExtensionList.value}" as="ext" iteration="i">
-                    <f:if condition="{ext.scope.system}">
-                        <div class="extension">
-                            <div>{ext.ext_key}</div>
-                            <div>{ext.version}</div>
-                        </div>
-                    </f:if>
-                </f:for>
-            </div>
-            <div class="extension-list">
-                <h3>ExtensionList - local</h3>
-                <f:for each="{apiData.GetExtensionList.value}" as="ext" iteration="i">
-                    <f:if condition="{ext.scope.local}">
-                        <div class="extension">
-                            <div>{ext.ext_key}</div>
-                            <div>{ext.version}</div>
-                        </div>
-                    </f:if>
-                </f:for>
-            </div>
-        </f:if>
+        <f:render partial="HasExtensionUpdateList" arguments="{_all}" />
+
+        <f:render partial="GetExtensionList" arguments="{_all}" />
     </f:if>
 </div>
 
 <style>
+    .zabbix_monitor.show-view .green {
+        background-color: green;
+        color: #fff;
+    }
+
+    .zabbix_monitor.show-view .warning {
+        background-color: orange;
+        color: #fff;
+    }
+
+    .zabbix_monitor.show-view .error {
+        background-color: red;
+        color: #fff;
+    }
+
+    .zabbix_monitor.show-view .section {
+        margin-bottom: 40px;
+    }
     .zabbix_monitor.show-view .extension-list .extension {
         display: grid;
         grid-template-columns: minmax(200px, 20%) 200px;
+    }
+
+    .zabbix_monitor.show-view .section table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .zabbix_monitor.show-view .section table td,
+    .zabbix_monitor.show-view .section table th {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    .zabbix_monitor.show-view .section table tr:nth-child(even) { background-color: #f2f2f2; }
+
+    .zabbix_monitor.show-view .section table tr:hover { background-color: #ddd; }
+
+    .zabbix_monitor.show-view .section table th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #4CAF50;
+        color: #fff;
     }
 </style>
 

@@ -95,6 +95,7 @@ class RequestHelper {
 
         $context  = stream_context_create($options);
         $result = file_get_contents( $url.'?'.http_build_query($urlParams).'&'.$additionalParams, false, $context );
+
         if($result) {
             return json_decode($result, true);
         }
@@ -190,6 +191,16 @@ class RequestHelper {
      */
     public function hasExtensionUpdate(string $extensionKey) {
         return $this->getApiData('HasExtensionUpdate', 'extensionKey='.$extensionKey);
+    }
+
+    /**
+     * hasExtensionUpdateList
+     *
+     * @param string $scope
+     * @return void
+     */
+    public function hasExtensionUpdateList(string $scope) {
+        return $this->getApiData('HasExtensionUpdateList', 'scope='.$scope);
     }
 
     /**
