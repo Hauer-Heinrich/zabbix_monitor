@@ -2,7 +2,6 @@
 defined('TYPO3_MODE') || die('Access denied.');
 
 call_user_func(function() {
-
     $extension = 'zabbix_monitor';
     $extensionname = \TYPO3\CMS\Core\Utility\GeneralUtility::underscoredToUpperCamelCase($extension);
     $plugin = 'Listview';
