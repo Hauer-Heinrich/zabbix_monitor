@@ -13,6 +13,8 @@ data-input:
 data-outpur:
 -> TYPO3 backend -> page-module -> shoose the page you want the ouput - add new Content-Element -> Plugin -> list_type: zabbixmonitor_listview
 
+### Recommended
+Use the scheduler command (e. g. crontab) to update the api-data.
 
 ### Features
 
@@ -21,6 +23,11 @@ data-outpur:
 ### Deprecated
 
 ### IMPORTENT NOTICE
+
+#### List-view
+![example picture from backend](.github/images/zabbix_monitor_list.jpg?raw=true "List")
+#### Detail-view
+![example picture from backend](.github/images/zabbix_monitor_detail.jpg?raw=true "Detail")
 
 ##### Copyright notice
 
