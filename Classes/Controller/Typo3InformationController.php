@@ -116,7 +116,7 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
      * @param integer $lifetime
      * @return array
      */
-    protected function getCachedValue(string $domain, string $apiKey, string $method, $methodParams = '', array $tags = [], int $lifetime = 135486): array {
+    protected function getCachedValue(string $domain, string $apiKey, string $method, $methodParams = '', array $tags = [], int $lifetime = 60): array {
         $cacheIdentifier = md5($domain.'-'.$method);
 
         // If $entry is false, it hasn't been cached. Calculate the value and store it in the cache:
