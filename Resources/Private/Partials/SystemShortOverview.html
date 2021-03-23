@@ -21,6 +21,12 @@
                 <td>Extensions has updates available</td>
                 <td class="green {f:if(condition: '{apiData.HasExtensionUpdateList.value -> f:count()} > 0', then: 'warning')}"></td>
             </tr>
+            <tr>
+                <td>Last scheduler run</td>
+                <td class="green {f:if(condition: '{apiData.GetLastSchedulerRun.value} <= 0', then: 'warning')}">
+                     <f:format.date format="%d. %B %Y">{apiData.GetLastSchedulerRun.value}</f:format.date> - <f:format.date format="H:i:s">{apiData.GetLastSchedulerRun.value}</f:format.date>
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>

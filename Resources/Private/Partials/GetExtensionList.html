@@ -3,6 +3,9 @@
 
 <f:if condition="{apiData.GetExtensionList} && {apiData.GetExtensionList.value}">
     <div class="section extension-list extension-list-system">
+        <details>
+            <summary>ExtensionList - System</summary>
+
         <table>
             <caption>ExtensionList - System</caption>
             <thead>
@@ -22,6 +25,7 @@
                 </f:for>
             </tbody>
         </table>
+    </details>
     </div>
     <div class="section extension-list extension-list-local">
         <table>
