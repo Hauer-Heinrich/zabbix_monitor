@@ -5,6 +5,25 @@
     <f:if condition="{apiData}">
         <div class="controls">
             <input type="text" name="filtr-search" value="" placeholder="Your search" class="filter-search" data-search="" onkeyup="searchClientName()">
+            <fieldset>
+                <legend>Filter</legend>
+                <label>
+                    <input class="radio-filter" type="radio" name="filter" value="all">
+                    Reset
+                </label>
+                <label>
+                    <input class="radio-filter" type="radio" name="filter" value="HasUpdate">
+                    Has Update
+                </label>
+                <label>
+                    <input class="radio-filter" type="radio" name="filter" value="HasSecurityUpdate">
+                    Has Security Update
+                </label>
+                <label>
+                    <input class="radio-filter" type="radio" name="filter" value="HasExtensionsUpdate">
+                    Has Extensions Update
+                </label>
+            </fieldset>
         </div>
 
         <div class="table filtr-container">
@@ -12,14 +31,17 @@
                 <div class="th" data-sortOrder="url"><span>Domain</span></div>
                 <div class="th" data-sortOrder="typo3-version"><span>TYPO3 Version</span></div>
                 <div class="th" data-sortOrder="php-version"><span>PHP Version</span></div>
-                <div class="th"><span>Has Update</span></div>
-                <div class="th"><span>Has Security Update</span></div>
+                <div class="th" data-sortOrder="HasUpdate"><span>Has Update</span></div>
+                <div class="th" data-sortOrder="HasSecurityUpdate"><span>Has Security Update</span></div>
+                <div class="th" data-sortOrder="HasExtensionUpdateList"><span>Has Extensions with Update</span></div>
                 <div class="th"><span>Options</span></div>
             </div>
 
             <f:for each="{apiData}" as="item" key="apiDataKey" iteration="i">
                 <div class="tr domain domain-{i.cycle} filter-item"
-                    data-category="{f:if(condition: '{item.HasUpdate.value}', then: 'needUpdate')}"
+                    data-HasUpdate="{item.HasUpdate.value}"
+                    data-HasSecurityUpdate="{item.HasSecurityUpdate.value}"
+                    data-HasExtensionUpdateList="{item.HasExtensionUpdateList.value -> f:count()}"
                     data-url="{item.apiUrl}"
                     data-typo3-version="{item.GetTYPO3Version.value}"
                     data-php-version="{item.GetPHPVersion.value}">
@@ -28,8 +50,15 @@
                     </div>
                     <div class="td">{item.GetTYPO3Version.value}</div>
                     <div class="td">{item.GetPHPVersion.value}</div>
-                    <div class="td center {f:if(condition: '{item.HasUpdate.value}', then: 'warning', else: 'success')}">{item.HasUpdate.value}</div>
-                    <div class="td center {f:if(condition: '{item.HasSecurityUpdate.value}', then: 'error', else: 'success')}">{item.HasSecurityUpdate.value}</div>
+                    <div class="td HasUpdate center {f:if(condition: '{item.HasUpdate.value}', then: 'warning', else: 'success')}" data-value="{item.HasUpdate.value}"></div>
+                    <div class="td HasSecurityUpdate center {f:if(condition: '{item.HasSecurityUpdate.value}', then: 'error', else: 'success')}" data-value="{item.HasSecurityUpdate.value}"></div>
+                    <div class="td HasExtensionUpdateList success {f:if(condition: '{item.HasExtensionUpdateList.value -> f:count()} > 0', then: 'warning')}" data-value="{item.HasExtensionUpdateList.value -> f:count()}">
+                        <f:if condition="{item.HasExtensionUpdateList.value -> f:count()} > 0">
+                            <f:for each="{item.HasExtensionUpdateList.value}" as="ext">
+                                <span data-hover="{ext.version}">{ext.extensionKey}</span>,
+                            </f:for>
+                        </f:if>
+                    </div>
                     <div class="td">
                         <f:link.typolink parameter="{item.apiUrl}/typo3" title="Open the TYPO3 backend" class="btn external-link domain-link-backend">Backend</f:link.typolink>
                         <f:link.action action="show" arguments="{apiUrl : '{item.apiUrl}'}" pageUid="{settings.singleViewPageUid}" class="btn detail-link" title="Show details of {apiDataKey}">Details</f:link.action>
@@ -42,11 +71,20 @@
 </div>
 
 <style>
-    /* .zabbix_monitor .table > .header,
-    .zabbix_monitor .table .table-content > .domain {
-        display: grid;
-        grid-template-columns: 25% 200px 200px 100px 100px 150px;
-    } */
+    .zabbix_monitor [data-hover] {
+        position: relative;
+    }
+
+    .zabbix_monitor [data-hover]:hover::after {
+        background-color: #ccc;
+        bottom: 100%;
+        border: 1px solid;
+        content: attr(data-hover);
+        display: block;
+        padding: 4px;
+        left: 0;
+        position: absolute;
+    }
 
     .zabbix_monitor .table {
         display: table;
@@ -105,13 +143,19 @@
 
     .zabbix_monitor .controls {
         display: none;
+        margin-bottom: 20px;
+    }
+
+    .zabbix_monitor .controls .filter-search {
+        display: block;
+        min-height: 30px;
     }
 
     .js .zabbix_monitor .controls {
         display: block;
     }
 
-    .js .zabbix_monitor .table > .th[data-sortorder] {
+    .js .zabbix_monitor .th[data-sortorder] {
         cursor: pointer;
     }
 </style>
@@ -181,14 +225,23 @@
         document.querySelector("[data-sortOrder='php-version']").addEventListener("click", function() {
             sortListDir(<f:comment></f:comment>"c{data.uid}", "data-php-version");
         });
+        document.querySelector("[data-sortOrder='HasUpdate']").addEventListener("click", function() {
+            sortListDir(<f:comment></f:comment>"c{data.uid}", "data-HasUpdate");
+        });
+        document.querySelector("[data-sortOrder='HasSecurityUpdate']").addEventListener("click", function() {
+            sortListDir(<f:comment></f:comment>"c{data.uid}", "HasSecurityUpdate");
+        });
+        document.querySelector("[data-sortOrder='HasExtensionUpdateList']").addEventListener("click", function() {
+            sortListDir(<f:comment></f:comment>"c{data.uid}", "data-HasExtensionUpdateList");
+        });
     });
 </f:asset.script>
 
 <f:asset.script identifier="zabbixMonitor/search">
     function searchClientName() {
         // Declare variables
-        var container, input, filter, ul, li, a, i, txtValue;<f:comment></f:comment>
-        container = document.getElementById("c{data.uid}");
+        var container, input, filter, ul, li, a, i, txtValue;
+        container = document.getElementById("<f:comment></f:comment>c{data.uid}");
         input = container.querySelector(".filter-search");
         filter = input.value.toUpperCase();
         ul = container.querySelector(".table");
@@ -205,6 +258,35 @@
             }
         }
     };
+
+    function radioFilter() {
+        // Declare variables
+        var container = document.querySelector("<f:comment></f:comment>#c{data.uid}");<f:comment></f:comment>
+        var radio = container.querySelectorAll(".radio-filter"),
+            ul = container.querySelector(".table"),
+            li = ul.querySelectorAll(".filter-item");
+        for (var i = 0; i < radio.length; i++) {
+            radio[i].addEventListener('change', function() {
+                if(this.value != 'all') {
+                    for (index = 0; index < li.length; index++) {
+                        var filterItem = li[index];
+                        var searchElement = filterItem.querySelector("."+this.value);
+                        if(searchElement && searchElement.getAttribute("data-value") > 0) {
+                            filterItem.style.display = "";
+                        } else {
+                            filterItem.style.display = "none";
+                        }
+                    }
+                } else {
+                    for (index = 0; index < li.length; index++) {
+                        var filterItem = li[index];
+                        filterItem.style.display = "";
+                    }
+                }
+            });
+        }
+    };
+    radioFilter();
 </f:asset.script>
 
 </html>
