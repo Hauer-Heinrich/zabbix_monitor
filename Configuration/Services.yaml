@@ -16,3 +16,13 @@ services:
   HauerHeinrich\ZabbixMonitor\Controller\Typo3InformationController:
     arguments:
       $cache: '@cache.api_data'
+
+  HauerHeinrich\ZabbixMonitor\Command\UpdateDomainListCommand:
+    tags:
+      - name: 'console.command'
+        command: 'zabbix_monitor:update'
+        description: 'An example description for a command'
+        # not required, defaults to false
+        hidden: false
+    arguments:
+      $cache: '@cache.api_data'
