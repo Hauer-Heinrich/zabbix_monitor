@@ -121,11 +121,12 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
 
         // If $entry is false, it hasn't been cached. Calculate the value and store it in the cache:
         if (($cacheValue = $this->cache->get($cacheIdentifier)) === false) {
-            if(empty($methodParams)) { $methodParams = null; }
-            $requestHandler = new \HauerHeinrich\ZabbixMonitor\Helper\RequestHelper($domain, $apiKey);
-            $cacheValue = $requestHandler->{$method}($methodParams);
-            // Save value in cache
-            $this->cache->set($cacheIdentifier, $cacheValue, $tags, $lifetime);
+            // if(empty($methodParams)) { $methodParams = null; }
+            // $requestHandler = new \HauerHeinrich\ZabbixMonitor\Helper\RequestHelper($domain, $apiKey);
+            // $cacheValue = $requestHandler->{$method}($methodParams);
+            // // Save value in cache
+            // $this->cache->set($cacheIdentifier, $cacheValue, $tags, $lifetime);
+            return [];
         }
 
         return $cacheValue;
@@ -156,7 +157,11 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
                     $method = $methodKey;
                 }
 
-                $apiData[$name][$method] = $this->getCachedValue($apiUrl, $apiKey, $method, $methodParams, [$method]);
+                $cachedValue = $this->getCachedValue($apiUrl, $apiKey, $method, $methodParams, [$method]);
+                $apiData[$name][$method] = $cachedValue;
+                if(empty($cachedValue)) {
+                    $apiData[$name]['errors'][$method][] = 'No data from the cache!';
+                }
             }
         }
 
@@ -198,7 +203,11 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
                     $method = $methodKey;
                 }
 
-                $apiData[$method] = $this->getCachedValue($apiUrl, $apiKey, $method, $methodParams, [$method]);
+                $cachedValue = $this->getCachedValue($apiUrl, $apiKey, $method, $methodParams, [$method]);
+                $apiData[$method] = $cachedValue;
+                if(empty($cachedValue)) {
+                    $apiData['errors'][$method] = 'No data from the cache!';
+                }
             }
 
             if(!empty($apiData['GetDiskSpace'])) {

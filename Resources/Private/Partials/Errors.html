@@ -1,0 +1,30 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    data-namespace-typo3-fluid="true">
+
+<f:if condition="{errors}">
+    <ul class="errors error-list">
+        <f:for each="{errors}" as="error" key="errorKey" iteration="i">
+            <li class="error">
+                <span class="label">{errorKey}:</span>
+                <span>{error}</span>
+            </li>
+        </f:for>
+    </ul>
+</f:if>
+
+<style>
+    .error-list {
+        margin: 20px 0;
+    }
+
+    .error-list .error {
+        margin-bottom: 10px;
+        padding: 10px;
+    }
+
+    .error-list .error .label {
+        display: block;
+    }
+</style>
+
+</html>

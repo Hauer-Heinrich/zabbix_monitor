@@ -47,6 +47,11 @@
                     data-php-version="{item.GetPHPVersion.value}">
                     <div class="td">
                         <f:link.typolink parameter="{item.apiUrl}" title="Open {item.apiUrl}" class="external-link domain-link">{apiDataKey}</f:link.typolink>
+                        <f:if condition="{item.errors -> f:count()} > 0">
+                            <span class="hint hint-small">
+                                <f:link.action action="show" arguments="{apiUrl : '{item.apiUrl}'}" pageUid="{settings.singleViewPageUid}" class="btn detail-link error" title="Show details of {apiDataKey}">Has errors</f:link.action>
+                            </span>
+                        </f:if>
                     </div>
                     <div class="td">{item.GetTYPO3Version.value}</div>
                     <div class="td">{item.GetPHPVersion.value}</div>
@@ -125,6 +130,10 @@
         padding: 4px;
     }
 
+    .zabbix_monitor .table .btn.error {
+        background-color: red;
+    }
+
     .zabbix_monitor div.center {
         text-align: center;
     }
@@ -139,6 +148,11 @@
 
     .zabbix_monitor div.error {
         background-color: red;
+    }
+
+    .zabbix_monitor .hint-small {
+        display: block;
+        font-size: 80%;
     }
 
     .zabbix_monitor .controls {

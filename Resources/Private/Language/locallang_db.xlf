@@ -14,7 +14,7 @@
                 <source>API URL</source>
             </trans-unit>
             <trans-unit id="tca.field.api_url.description">
-                <source>(e. g. https://www.domain.tld/zabbixclient)</source>
+                <source>(e. g. https://www.domain.tld)</source>
             </trans-unit>
             <trans-unit id="tca.field.api_key">
                 <source>API Key</source>

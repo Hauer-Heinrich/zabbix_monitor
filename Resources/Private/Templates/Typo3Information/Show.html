@@ -5,6 +5,8 @@
     <f:if condition="{apiData}">
         <h1><f:link.typolink parameter="{apiData.apiUrl}">{apiData.name}</f:link.typolink></h1>
 
+        <f:render partial="Errors" arguments="{errors: '{apiData.errors}'}" />
+
         <f:render partial="SystemShortOverview" arguments="{_all}" />
 
         <f:render partial="HasExtensionUpdateList" arguments="{_all}" />
