@@ -5,13 +5,13 @@ namespace HauerHeinrich\ZabbixMonitor\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise;
+use \TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 use \TYPO3\CMS\Core\Utility\GeneralUtility;
 use \TYPO3\CMS\Extbase\Object\ObjectManager;
 use \TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -39,7 +39,9 @@ class UpdateDomainListCommand extends Command {
         ],
         // 'GetExtensionVersion' => [],
         'GetFilesystemChecksum' => [],
-        'GetPHPVersion' => [],
+        'GetPHPVersion' => [
+            'lifetime' => 172800
+        ],
         'GetTYPO3Version' => [],
         'GetLogResults' => [],
         // 'HasForbiddenUsers' => [],
@@ -84,8 +86,9 @@ class UpdateDomainListCommand extends Command {
             ->setDefinition(
                 new InputDefinition([
                     new InputOption('debugOutput', 'd', InputOption::VALUE_NONE, 'outputs debug informations'),
-                    new InputOption('url', 'u', InputOption::VALUE_REQUIRED, 'URL to update - must be exactly the same value as safed at the database'),
+                    new InputOption('url', 'u', InputOption::VALUE_REQUIRED, 'URL to update - must be exactly the same value as safed at the database, e. g. https://www.domain.tld'),
                     new InputOption('method', 'm', InputOption::VALUE_REQUIRED, 'Updates a specific API method. Example: GetLastExtensionListUpdate'),
+                    new InputOption('lifetime', 'l', InputOption::VALUE_REQUIRED, 'Set the lifetime of the cached data. Overwrites the default-values!'),
                 ])
             );
     }
@@ -118,87 +121,103 @@ class UpdateDomainListCommand extends Command {
 
         $inputMethod = $input->getOption('method');
         if(array_key_exists($inputMethod, $this->methodList)) {
-            $methodList = $this->methodList[$inputMethod];
+            $methodList[$inputMethod] = $this->methodList[$inputMethod];
         } else {
             $methodList = $this->methodList;
         }
 
-        foreach ($domainList as $domainKey => $domainValue) {
-            $io->writeln('process: '.$domainValue->getApiUrl());
+        $inputlifetime = intval($input->getOption('lifetime'));
 
-            $content = [];
-            $errors = [];
-            $client = new Client([
-                'base_uri'    => $domainValue->getApiUrl(),
-                'timeout'     => 40, // how long one request may take at most, in seconds
-                'headers' => [
-                    'api-key' => $domainValue->getApiKey(),
-                ],
-            ]);
+        if(!empty($domainList)) {
+            foreach ($domainList as $domainValue) {
+                $io->writeln('process: '.$domainValue->getApiUrl());
 
-            // Initiate each request but do not block.
-            $promises = [];
-            $promisesMethod = [];
+                $content = [];
+                $errors = [];
+                $client = new Client([
+                    'base_uri'    => $domainValue->getApiUrl(),
+                    'timeout'     => 40, // how long one request may take at most, in seconds
+                    'headers' => [
+                        'api-key' => $domainValue->getApiKey(),
+                    ],
+                ]);
 
-            foreach ($methodList as $methodKey => $methodValue) {
-                $additionalParams = '';
-                $method = $methodKey;
-                if(is_array($methodValue['additionalParams'])) {
-                    foreach ($methodValue['additionalParams'] as $additionalParamsKey => $additionalParamsValue) {
-                        $additionalParams .= '&'.$additionalParamsKey.'='.$additionalParamsValue;
+                // Initiate each request but do not block.
+                $promises = [];
+                $promisesMethod = [];
+
+                foreach ($methodList as $methodKey => $methodValue) {
+                    $additionalParams = '';
+                    $method = $methodKey;
+
+                    if(is_array($methodValue['additionalParams'])) {
+                        foreach ($methodValue['additionalParams'] as $additionalParamsKey => $additionalParamsValue) {
+                            $additionalParams .= '&'.$additionalParamsKey.'='.$additionalParamsValue;
+                        }
+                    }
+
+                    $cacheIdentifier = md5($domainValue->getApiUrl().'-'.$method);
+                    if (($cacheValue = $this->cache->get($cacheIdentifier)) === false) {
+                        // $promises[] = $client->getAsync('/zabbixclient/?key='.$domainValue->getApiKey().'&operation='.$method.$additionalParams);
+                        $promises[] = $client->getAsync('/zabbixclient/?'.'operation='.$method.$additionalParams);
+                        $promisesMethod[] = $method;
                     }
                 }
 
-                $cacheIdentifier = md5($domainValue->getApiUrl().'-'.$method);
-                if (($cacheValue = $this->cache->get($cacheIdentifier)) === false) {
-                    // $promises[] = $client->getAsync('/zabbixclient/?key='.$domainValue->getApiKey().'&operation='.$method.$additionalParams);
-                    $promises[] = $client->getAsync('/zabbixclient/?'.'operation='.$method.$additionalParams);
-                    $promisesMethod[] = $method;
-                }
-            }
+                // Wait for the requests to complete, even if some of them fail.
+                $results = Promise\settle($promises)->wait();
 
-            // Wait for the requests to complete, even if some of them fail.
-            $results = Promise\settle($promises)->wait();
+                foreach ($results as $data => $download) {
+                    if ($download['state'] === 'fulfilled') {
+                        $returnArray = json_decode( (string)$download['value']->getBody(), true);
+                        $content[$domainValue->getApiUrl()][$promisesMethod[$data]] = $returnArray;
 
-            foreach ($results as $data => $download) {
-                if ($download['state'] === 'fulfilled') {
-                    $returnArray = json_decode( (string)$download['value']->getBody(), true);
-                    $content[$domainValue->getApiUrl()][$promisesMethod[$data]] = $returnArray;
+                        if($inputlifetime > 0) {
+                            $lifetime = $inputlifetime;
+                        } else {
+                            // get the lifetime of the default method array
+                            if(is_array($methodList[$promisesMethod[$data]]) && is_int($methodList[$promisesMethod[$data]]['lifetime'])) {
+                                $lifetime = $methodList[$promisesMethod[$data]]['lifetime'];
+                            } else {
+                                // default 1 day = 86400
+                                $lifetime = 86400;
+                            }
+                        }
 
-                    if(is_array($methodList[$promisesMethod[$data]]) && is_int($methodList[$promisesMethod[$data]]['lifetime'])) {
-                        $lifetime = $methodList[$promisesMethod[$data]]['lifetime'];
-                    } else {
-                        // default 1 day = 86400
-                        $lifetime = 86400;
+                        $this->getCachedValue($domainValue->getApiUrl(), $promisesMethod[$data], [$promisesMethod[$data]], $returnArray, $lifetime);
                     }
 
-                    $this->getCachedValue($domainValue->getApiUrl(), $promisesMethod[$data], [$promisesMethod[$data]], $returnArray, $lifetime);
+                    if ($download['state'] === 'rejected') {
+                        $errors[] = [
+                            'errorCode' => $download['reason']->getCode(),
+                            'errorMessage' => $download['reason']->getMessage()
+                        ];
+                    }
                 }
-                if ($download['state'] === 'rejected') {
-                    $errors[] = [
-                        'errorCode' => $download['reason']->getCode(),
-                        'errorMessage' => $download['reason']->getMessage()
-                    ];
+
+                if(!empty($errors)) {
+                    $io->warning($domainValue->getApiUrl(). ' -------- has errors!');
+
+                    if($input->getOption('debugOutput')) {
+                        $io->warning('Skip: '.$domainValue->getApiUrl(), 'Errors: '.$errorCode);
+                        $io->table(
+                            ['ErrorCode', 'Error Message'],
+                            $errors
+                        );
+                    }
                 }
             }
 
-            if(!empty($errors)) {
-                $io->warning($domainValue->getApiUrl(). ' -------- has errors!');
+            $io->writeln('');
+            $io->writeln('zabbix_monitor domain info updated');
 
-                if($input->getOption('debugOutput')) {
-                    $io->warning('Skip: '.$domainValue->getApiUrl(), 'Errors: '.$errorCode);
-                    $io->table(
-                        ['ErrorCode', 'Error Message'],
-                        $errors
-                    );
-                }
-            }
+            return Command::SUCCESS;
         }
 
         $io->writeln('');
-        $io->writeln('zabbix_monitor domain info updated');
+        $io->error('domainList - no domains found!');
 
-        return Command::SUCCESS;
+        return Command::FAILURE;
     }
 
     /**

@@ -59,8 +59,8 @@
                     <div class="td HasSecurityUpdate center {f:if(condition: '{item.HasSecurityUpdate.value}', then: 'error', else: 'success')}" data-value="{item.HasSecurityUpdate.value}"></div>
                     <div class="td HasExtensionUpdateList success {f:if(condition: '{item.HasExtensionUpdateList.value -> f:count()} > 0', then: 'warning')}" data-value="{item.HasExtensionUpdateList.value -> f:count()}">
                         <f:if condition="{item.HasExtensionUpdateList.value -> f:count()} > 0">
-                            <f:for each="{item.HasExtensionUpdateList.value}" as="ext">
-                                <span data-hover="{ext.version}">{ext.extensionKey}</span>,
+                            <f:for each="{item.HasExtensionUpdateList.value}" as="ext" iteration="i">
+                                <span data-hover="{ext.version}">{ext.extensionKey}</span>{f:if(condition: '{i.isLast}', else: ',')}
                             </f:for>
                         </f:if>
                     </div>

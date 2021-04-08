@@ -24,13 +24,6 @@ return [
             'showitem' => 'api_url, api_key'
         ],
     ],
-    'interface' => [
-        'showRecordFieldList' => '
-            hidden,
-            title,
-            api_url
-        ',
-    ],
     'types' => [
         '1' => [
             'showitem' => '

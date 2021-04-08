@@ -1,1 +1,10 @@
-/vendor/
+.idea
+.Build/*
+.php_cs
+.php_cs.cache
+composer.lock
+Documentation-GENERATED-temp
+
+### VS Code
+*.code-workspace
+.vscode/

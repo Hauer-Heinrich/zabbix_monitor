@@ -8,6 +8,7 @@ use \Psr\Log\LoggerAwareTrait;
 use \TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use \TYPO3\CMS\Core\Utility\GeneralUtility;
 use \TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
+use \HauerHeinrich\ZabbixMonitor\Helper\FormatHelper;
 
 class Typo3InformationController extends ActionController implements \Psr\Log\LoggerAwareInterface {
 
@@ -113,20 +114,20 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
      * @param string $method - examples see $methodList
      * @param string $methodParams - examples see $methodList -> GetExtensionList
      * @param array $tags
-     * @param integer $lifetime
+     * @param integer $lifetime - in seconds: default one day = 86400 seconds
      * @return array
      */
-    protected function getCachedValue(string $domain, string $apiKey, string $method, $methodParams = '', array $tags = [], int $lifetime = 60): array {
+    protected function getCachedValue(string $domain, string $apiKey, string $method, $methodParams = '', array $tags = [], int $lifetime = 86400): array {
         $cacheIdentifier = md5($domain.'-'.$method);
 
         // If $entry is false, it hasn't been cached. Calculate the value and store it in the cache:
         if (($cacheValue = $this->cache->get($cacheIdentifier)) === false) {
-            // if(empty($methodParams)) { $methodParams = null; }
-            // $requestHandler = new \HauerHeinrich\ZabbixMonitor\Helper\RequestHelper($domain, $apiKey);
-            // $cacheValue = $requestHandler->{$method}($methodParams);
-            // // Save value in cache
-            // $this->cache->set($cacheIdentifier, $cacheValue, $tags, $lifetime);
-            return [];
+            if(empty($methodParams)) { $methodParams = null; }
+            $requestHandler = new \HauerHeinrich\ZabbixMonitor\Helper\RequestHelper($domain, $apiKey);
+            $cacheValue = $requestHandler->{$method}($methodParams);
+            // Save value in cache
+            $this->cache->set($cacheIdentifier, $cacheValue, $tags, $lifetime);
+            // return [];
         }
 
         return $cacheValue;
@@ -186,7 +187,6 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
         }
 
         $domainInfo = $this->clientinfoRepository->findByApiUrl($apiUrl)[0];
-
         if(!empty($domainInfo)) {
             $apiUrl = $domainInfo->getApiUrl();
             $apiKey = $domainInfo->getApiKey();
@@ -213,11 +213,16 @@ class Typo3InformationController extends ActionController implements \Psr\Log\Lo
             if(!empty($apiData['GetDiskSpace'])) {
                 $totalBytes = $apiData['GetDiskSpace']['value']['total'];
                 $freeBytes = $apiData['GetDiskSpace']['value']['free'];
-                $totalFormated = \HauerHeinrich\ZabbixMonitor\Helper\FormatHelper::formatBytes($totalBytes);
-                $freeFormated = \HauerHeinrich\ZabbixMonitor\Helper\FormatHelper::formatBytes($freeBytes);
 
-                $apiData['GetDiskSpace']['value']['total'] = $totalFormated;
-                $apiData['GetDiskSpace']['value']['free'] = $freeFormated;
+                if(is_int($totalBytes)) {
+                    $totalFormated = FormatHelper::formatBytes($totalBytes);
+                    $apiData['GetDiskSpace']['value']['total'] = $totalFormated;
+                }
+
+                if(is_int($freeBytes)) {
+                    $freeFormated = FormatHelper::formatBytes($freeBytes);
+                    $apiData['GetDiskSpace']['value']['free'] = $freeFormated;
+                }
             }
 
             $phpVersion = $apiData['GetPHPVersion']['value'];

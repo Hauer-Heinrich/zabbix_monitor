@@ -19,7 +19,13 @@
             </tr>
             <tr>
                 <td>Extensions has updates available</td>
-                <td class="green {f:if(condition: '{apiData.HasExtensionUpdateList.value -> f:count()} > 0', then: 'warning')}"></td>
+                <td class="green {f:if(condition: '{apiData.HasExtensionUpdateList.value -> f:count()} > 0', then: 'warning')}">
+                    <f:if condition="{apiData.HasExtensionUpdateList.value -> f:count()} > 0">
+                        <f:for each="{apiData.HasExtensionUpdateList.value}" as="ext" iteration="i">
+                            <span data-hover="{ext.version}">{ext.extensionKey}</span>{f:if(condition: '{i.isLast}', else: ',')}
+                        </f:for>
+                    </f:if>
+                </td>
             </tr>
             <tr>
                 <td>Last scheduler run</td>

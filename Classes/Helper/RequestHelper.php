@@ -81,20 +81,27 @@ class RequestHelper {
     public function getApiData(string $operation, string $additionalParams = ''): array {
         $url = $this->domain.'/zabbixclient/';
         $urlParams = [
-            'key' => $this->apiKey,
+            // 'key' => $this->apiKey,
             'operation' => $operation
         ];
         $data = [ ];
-        $options = [
-            'http' => [
-                'header'  => "Content-type: application/json\r\n",
+        $options =  [
+            'http'=> [
+                'header' => "Content-type: application/json\r\n" . "api-key: ". $this->apiKey ."\r\n",
                 'method'  => 'POST',
                 'content' => json_encode($data),
             ]
         ];
 
         $context  = stream_context_create($options);
-        $result = file_get_contents( $url.'?'.http_build_query($urlParams).'&'.$additionalParams, false, $context );
+            $result = file_get_contents( $url.'?'.http_build_query($urlParams).'&'.$additionalParams, false, $context );
+
+        try {
+            $context  = stream_context_create($options);
+            $result = file_get_contents( $url.'?'.http_build_query($urlParams).'&'.$additionalParams, false, $context );
+        } catch (\Throwable $th) {
+            throw $th;
+        }
 
         if($result) {
             return json_decode($result, true);

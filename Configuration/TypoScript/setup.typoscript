@@ -16,9 +16,6 @@ plugin.tx_zabbixmonitor_listview {
     persistence {
         storagePid = {$plugin.tx_zabbixmonitor_listview.persistence.storagePid}
         #recursive = 1
-
-        storagePidOrganizations = {$plugin.tx_zabbixmonitor_listview.persistence.storagePidOrganizations}
-        storagePidContactPointAddresses = {$plugin.tx_zabbixmonitor_listview.persistence.storagePidContactPointAddresses}
     }
     features {
         #skipDefaultArguments = 1
