@@ -43,7 +43,12 @@ class UpdateDomainListCommand extends Command {
             'lifetime' => 172800
         ],
         'GetTYPO3Version' => [],
-        'GetLogResults' => [],
+        'GetLogResults' => [
+            'additionalParams' => [
+                'filter' => 'error',
+                'max' => 10
+            ]
+        ],
         // 'HasForbiddenUsers' => [],
         'HasUpdate' => [],
         'HasSecurityUpdate' => [],
