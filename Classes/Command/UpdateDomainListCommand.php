@@ -174,7 +174,7 @@ class UpdateDomainListCommand extends Command {
                     $cacheIdentifier = md5($domainValue->getApiUrl().'-'.$method);
                     if (($cacheValue = $this->cache->get($cacheIdentifier)) === false) {
                         // $promises[] = $client->getAsync('/zabbixclient/?key='.$domainValue->getApiKey().'&operation='.$method.$additionalParams);
-                        $promises[] = $client->getAsync('/zabbixclient/?'.'operation='.$method.$additionalParams);
+                        $promises[] = $client->requestAsync('POST', '/zabbixclient/?'.'operation='.$method.$additionalParams);
                         $promisesMethod[] = $method;
                     }
                 }
