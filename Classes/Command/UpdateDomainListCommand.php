@@ -88,7 +88,8 @@ class UpdateDomainListCommand extends Command {
                     new InputOption('debugOutput', 'd', InputOption::VALUE_NONE, 'outputs debug informations'),
                     new InputOption('url', 'u', InputOption::VALUE_REQUIRED, 'URL to update - must be exactly the same value as safed at the database, e. g. https://www.domain.tld'),
                     new InputOption('method', 'm', InputOption::VALUE_REQUIRED, 'Updates a specific API method. Example: GetLastExtensionListUpdate'),
-                    new InputOption('lifetime', 'l', InputOption::VALUE_REQUIRED, 'Set the lifetime of the cached data. Overwrites the default-values!'),
+                    new InputOption('methodList', 'l', InputOption::VALUE_NONE, 'Lists available methods (-m). Example: GetLastExtensionListUpdate'),
+                    new InputOption('lifetime', 't', InputOption::VALUE_REQUIRED, 'Set the lifetime of the cached data. Overwrites the default-values!'),
                 ])
             );
     }
@@ -106,6 +107,20 @@ class UpdateDomainListCommand extends Command {
 
         $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
         $this->clientinfoRepository = $objectManager->get(ClientinfoRepository::class);
+
+        if($input->getOption('methodList')) {
+            $list = [];
+            foreach ($this->methodList as $key => $value) {
+                $list[$key][] = $key;
+            }
+
+            $io->table(
+                ['Method list'],
+                $list
+            );
+
+            return Command::SUCCESS;
+        }
 
         $inputUrl = $input->getOption('url');
         if(empty($inputUrl)) {
